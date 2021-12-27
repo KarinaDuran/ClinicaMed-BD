@@ -1,6 +1,7 @@
+import java.sql.Date;
 import java.time.LocalDateTime;
 
-public class Agendamento {
+public class Consulta{
 
 private int IdConsulta;
 private LocalDateTime DtInicio;
@@ -63,7 +64,7 @@ public int getPago(){
 public void setCRMMedico(int CRMMedico){
     this.CRMMedico = CRMMedico;
 }
-public int geCRMMEDICO(){
+public int getCRMMEDICO(){
     return CRMMedico;
 }
 
