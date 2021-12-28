@@ -1,14 +1,11 @@
-import java.sql.Date;
-import java.time.LocalDateTime;
-
 public class Consulta {
 
-    private int IdConsulta;
+    private int IdConsulta;// autoincrement
     private String DtInicio;
     private String DtFim;
-    private int Realizada;
+    private String Realizada; // String
     private double ValorPago;
-    private int Pago;
+    private int Pago; // boolean
     private int CRMMedico;
     private String CPFPaciente;
 
@@ -36,11 +33,11 @@ public class Consulta {
         return DtFim;
     }
 
-    public void setRealizada(int Realizada) {
+    public void setRealizada(String Realizada) {
         this.Realizada = Realizada;
     }
 
-    public int getRealizada() {
+    public String getRealizada() {
         return Realizada;
     }
 
