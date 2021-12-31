@@ -42,71 +42,161 @@ public class Menu {
 
                         clin.adicionaPaciente(pac);                   
                     }
-                    fazConsulta(CPF, con, clin);
-
+                    fazConsulta(CPF, con, clin,0);
+                    break;
 
                 case "1":
-                    System.out.println("Insira o CRM do médico. ");
-                    int CRM =(Integer.parseInt(scan.nextLine()));
-                    System.out.println("Siga o formato de data AAAA-MM-DD ");
-                    System.out.println("Insira o dia da consulta. ");
-                    String data =(scan.nextLine());
-                    clin.consultasPorMedicoEmUmDia(CRM, data);
+                    String optCon,data;
+                    do{
+                        optionsVisualizacao();
+                        optCon = scan.nextLine();
+                        switch(optCon){
+                            case "0": {
+                                System.out.println("Insira o CRM do médico. ");
+                                int CRM =(Integer.parseInt(scan.nextLine()));
+                                System.out.println("Siga o formato de data AAAA-MM-DD ");
+                                System.out.println("Insira o dia da consulta. ");
+                                data =(scan.nextLine());
+                                clin.consultasPorMedicoEmUmDia(CRM, data);
+                                break;
+                            }
+                            case "1": {
+                                System.out.println("Siga o formato de data AAAA-MM-DD ");
+                                System.out.println("Insira o dia da consulta. ");
+                                data =(scan.nextLine());
+                                clin.consultasPorDia(data);
+                                break;
+                            }
+                        }
+                    } while (!optCon.equals("2"));
+                    break;
                 case "2":
-                String optCon;
-                do{
-                    optionsVisualizacao();
-                    optCon = scan.nextLine();
-                    switch(optCon){
-                        case "0": {
-                            System.out.println("Insira o CRM do medico. ");
-                            int CRMMedico =(Integer.parseInt(scan.nextLine()));
-                            System.out.println("Siga o formato de data AAAA-MM-DD ");
-                            System.out.println("Insira o data inicial. ");
-                            String data1 =(scan.nextLine());
-                            System.out.println("Insira o data final. ");
-                            String data2 =(scan.nextLine());
-                            clin.consultasPorMedicoEmIntervalo(CRMMedico, data1, data2);
+                    String optCon2,data1, data2;
+                    do{
+                        optionsVisualizacao();
+                        optCon2 = scan.nextLine();
+                        switch(optCon2){
+                            case "0": {
+                                System.out.println("Insira o CRM do medico. ");
+                                int CRMMedico =(Integer.parseInt(scan.nextLine()));
+                                System.out.println("Siga o formato de data AAAA-MM-DD ");
+                                System.out.println("Insira o data inicial. ");
+                                data1 =(scan.nextLine());
+                                System.out.println("Insira o data final. ");
+                                data2 =(scan.nextLine());
+                                clin.consultasPorMedicoEmIntervalo(CRMMedico, data1, data2);
+                                break;
+                            }
+                            case "1": {
+                                System.out.println("Siga o formato de data AAAA-MM-DD ");
+                                System.out.println("Insira o data inicial. ");
+                                data1 =(scan.nextLine());
+                                System.out.println("Insira o data final. ");
+                                data2 =(scan.nextLine());
+                                clin.consultasEmIntervalo(data1, data2);
+                                break;
+                            }
                         }
-                        case "1": {
-                            System.out.println("Siga o formato de data AAAA-MM-DD ");
-                            System.out.println("Insira o data inicial. ");
-                            String data1 =(scan.nextLine());
-                            System.out.println("Insira o data final. ");
-                            String data2 =(scan.nextLine());
-                            clin.consultasEmIntervalo(data1, data2);
-                        }
-                    }
-                } while (!optCon.equals("2"));
-
+                    } while (!optCon2.equals("2"));
+                    break;
                 case "3":
-                    System.out.println("Parte 4");
+                    System.out.println("Insira o id da consulta a ser alterada");
+                    String id = scan.nextLine();
+                    int idConsulta = (Integer.parseInt(id));
+                    Consulta conAlterada = clin.pegaConsulta(idConsulta);
+                    altConsulta(conAlterada);
                     break;
                 case "4":
-                    System.out.println("Parte 5");
+                    System.out.println("Insira o id da consulta a ser exlcluida");
+                    String idc = scan.nextLine();
+                    int idCon = (Integer.parseInt(idc));
+                    clin.removeConsulta(idCon);
                     break;
+
                 case "5":
-                    System.out.println("Parte 6");
+                    excluiIntervalo(clin);
                     break;
                 case "6":
-                    System.out.println("Parte 6");
+                System.out.println("Insira o CPF do paciente a ser consultado");
+                String cpfpac= scan.nextLine();
+                clin.consultasDeUmPaciente(cpfpac);
                     break;
             }
-
+            
         } while (!comando.equals("7"));
+        scan.close();
+    }
+
+    public static void excluiIntervalo(Clinica clin){
+        // String comando;
+         Scanner scan = new Scanner(System.in);
+        String dataInicio,dataFim;
+        int crm;
+        System.out.println("Siga o formato de data AAAA-MM-DD ");
+        System.out.println("Data e horário de início: ");
+        dataInicio = scan.nextLine();
+        System.out.println("Data e horário de fim: ");
+        dataFim = scan.nextLine();
+        System.out.println("CRM do médico: ");
+        crm = Integer.parseInt(scan.nextLine());
+        clin.removeConsultasEmUmIntervalo(crm, dataInicio, dataFim);
+        scan.close();
 
     }
 
-    public static void fazConsulta(String cpf, Consulta con, Clinica clin){
+    public static Consulta altConsulta(Consulta con){
+        Scanner scan = new Scanner(System.in);
+        String comando;
+        do{
+            optionsConsulta();
+            comando = scan.nextLine();
+            switch (comando){
+                case "0":
+                    System.out.println("Siga o formato de data AAAA-MM-DD ");
+                    System.out.println("Data e horário de início: ");
+                    con.setDtInicio(scan.nextLine());
+                case "1":
+                    System.out.println("Siga o formato de data AAAA-MM-DD ");
+                    System.out.println("Data e horário de fim: ");
+                    con.setDtFim(scan.nextLine());
+                case "2":
+                    System.out.println("Realizada (digite 1 para sim ou 0 para não): ");
+                    con.setRealizada(scan.nextLine());
+                case "3":                    
+                    System.out.println("Valor Pago: ");
+                    con.setValorPago(Double.parseDouble(scan.nextLine()));
+                case "4":                    
+                    System.out.println("Foi pago (digite 1 para sim ou 0 para não): ");
+                    con.setPago(Integer.parseInt(scan.nextLine()));
+                case "5":
+                    System.out.println("CRM do médico: ");
+                    con.setCRMMedico(Integer.parseInt(scan.nextLine()));
+                case "6":
+                    System.out.println("Insira o CPF do paciente");
+                    con.setCPFPaciente( scan.nextLine());               
+            }
+
+        } while (!comando.equals("7"));
+        scan.close();
+        return con;
+    }   
+
+    public static void fazConsulta(String cpf, Consulta con, Clinica clin, int caso){
         Scanner c1 = new Scanner(System.in);
+                
                 System.out.println("Insira os dados da consulta. ");
+            
+                
+                con.setCPFPaciente(cpf);
+
                 System.out.println("Siga o formato de data AAAA-MM-DD ");
                 System.out.println("Data e horário de início: ");
                 con.setDtInicio(c1.nextLine());
 
                 System.out.println("Data e horário de fim: ");
-                String id = c1.nextLine();
-                con.setIdConsulta(Integer.parseInt(id));
+                con.setDtFim(c1.nextLine());
+                // String id = c1.nextLine();
+                // con.setIdConsulta(Integer.parseInt(id));
 
                 System.out.println("Realizada (digite 1 para sim ou 0 para não): ");
                 con.setRealizada(c1.nextLine());
@@ -119,34 +209,38 @@ public class Menu {
 
                 System.out.println("CRM do médico: ");
                 con.setCRMMedico(Integer.parseInt(c1.nextLine()));
-
+ 
                 clin.adicionaConsulta(con);
+
                 c1.close();
     }
 
-    public static void optionsPaciente() {
-        /*
-         * verifica de entrada se o paciente ja tem cadastro ou não
-         * se não tiver, tem que completar o cadastro
-         * se tiver fdc
-         */
-        System.out.print("========== Sobre o paciente ==========\n");
+    
+
+    // public static void optionsMedico() {
+    //     System.out.print("========== Sobre o medico ==========\n");
+    //     System.out.println("- Insira o código do comando desejado:\n");
+    //     System.out.println("(0) Desaja procurar um medico pelo nome.\n");// dar return nos crms
+    //     System.out.println("(1) Deseja agendar consulta pelo CRM do medico. \n");
+    //     System.out.println("(2) Gostaria de ver as opções de uma determinada especialidade.\n");// CRM
+    //     System.out.println("======================================================");
+    // }
+
+    public static void optionsConsulta() {
+
+        System.out.print("========== Sobre Consulta ==========\n");
         System.out.println("- Insira o código do comando desejado:\n");
-        System.out.println("(0) Paciente ja possui cadastro\n");
-        System.out.println("(1) Novo paciente. \n");
-        System.out.println("(2) Verificar se o paciente ja esta cadastrado.");
-        System.out.println("(3) Voltar ao inicio.\n");
+        System.out.println("(0) alterar a data inicial .\n");// dar return nos crms
+        System.out.println("(1) alterar o data final. \n");
+        System.out.println("(2) alterar se ela foi realizada ou não. \n");
+        System.out.println("(3) alterar o valor pago. \n");
+        System.out.println("(4) alterar o se foi pago ou não. \n");
+        System.out.println("(5) alterar o CRM do medico. \n");
+        System.out.println("(6) alterar o CPF do paciente .\n");// CRM
+        System.out.println("(7) voltar ao inicio");
         System.out.println("======================================================");
     }
 
-    public static void optionsMedico() {
-        System.out.print("========== Sobre o medico ==========\n");
-        System.out.println("- Insira o código do comando desejado:\n");
-        System.out.println("(0) Desaja procurar um medico pelo nome.\n");// dar return nos crms
-        System.out.println("(1) Deseja agendar consulta pelo CRM do medico. \n");
-        System.out.println("(2) Gostaria de ver as opções de uma determinada especialidade.\n");// CRM
-        System.out.println("======================================================");
-    }
 
     public static void optionsVisualizacao() {
         System.out.print("========== Sobre a visualizacao de consultas ==========\n");
