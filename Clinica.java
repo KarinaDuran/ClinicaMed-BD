@@ -1,13 +1,12 @@
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class Clinica {
     public Scanner scanner;
     private Connection connection;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-DD HH:mm");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public Clinica() {
         try {
@@ -123,14 +122,17 @@ public class Clinica {
             throw new RuntimeException(e);
         }
     }
-    
-    public void HistoricoPaciente(String CPF){
+
+    public void HistoricoPaciente(String CPF) {
         try {
-            PreparedStatement stmt = this.connection.prepareStatement("SELECT A.Nome, A.CRM, D.Nome FROM Medico A INNER JOIN CONSULTA B ON A.CRM = B.CRMMedico INNER JOIN Historico C ON C.IdConsulta = B.IdConsulta INNER JOIN Doenca D ON C.IdDoenca = D.IdDoenca WHERE B.CPFPaciente = " + CPF);
+            PreparedStatement stmt = this.connection.prepareStatement(
+                    "SELECT A.Nome, A.CRM, D.Nome FROM Medico A INNER JOIN CONSULTA B ON A.CRM = B.CRMMedico INNER JOIN Historico C ON C.IdConsulta = B.IdConsulta INNER JOIN Doenca D ON C.IdDoenca = D.IdDoenca WHERE B.CPFPaciente = "
+                            + CPF);
             ResultSet rs = stmt.executeQuery();
             System.out.println("Histórico do paciente: ");
-            while(rs.next()){
-                System.out.println("Doenca: " + rs.getString("D.Nome") + "  Medico responsavel pelo diagnostico: " + rs.getString("A.Nome") + " - CRM: " + rs.getInt("A.CRM"));
+            while (rs.next()) {
+                System.out.println("Doenca: " + rs.getString("D.Nome") + "  Medico responsavel pelo diagnostico: "
+                        + rs.getString("A.Nome") + " - CRM: " + rs.getInt("A.CRM"));
             }
 
         } catch (SQLException e) {
@@ -139,33 +141,40 @@ public class Clinica {
 
     }
 
-    //V
+    // V - V
     public boolean VerificaHorario(String DataInicio, String DataFim, int CRM) {
 
         try {
             PreparedStatement stmt;
             stmt = this.connection.prepareStatement(
-                    "SELECT * FROM CONSULTA WHERE CRMMEDICO = " + CRM + " AND dtInicio BETWEEN CONVERT(" + DataInicio
-                            + ", GETDATE())  AND CONVERT(" + DataFim + ", GETDATE()) OR dtFim  BETWEEN CONVERT("
-                            + DataInicio + ", GETDATE())  AND CONVERT(" + DataFim + ", GETDATE())");
+
+                    "SELECT * FROM CONSULTA WHERE CRMMEDICO = " + CRM + " AND DtInicio BETWEEN STR_TO_DATE(\""
+                            + DataInicio +
+                            "\", \"%Y-%m-%d %H:%i\") AND STR_TO_DATE(\"" + DataFim
+                            + "\", \"%Y-%m-%d %H:%i\") OR DtFim BETWEEN STR_TO_DATE(\"" + DataInicio
+                            + "\", \"%Y-%m-%d %H:%i\") AND STR_TO_DATE(\"" + DataFim
+                            + "\", \"%Y-%m-%d %H:%i\") OR STR_TO_DATE(\"" + DataInicio
+                            + "\", \"%Y-%m-%d %H:%i\") BETWEEN DtInicio AND DtFim;");
             ResultSet rs = stmt.executeQuery();
 
-            if (!rs.wasNull())
+            if (rs.next())
                 return false;
 
-            int horaInico = LocalDateTime.parse(DataInicio).getHour();
-            int minutoInicio = LocalDateTime.parse(DataInicio).getMinute();
+            int horaInico = LocalDateTime.parse(DataInicio, formatter).getHour();
+            int minutoInicio = LocalDateTime.parse(DataInicio, formatter).getMinute();
 
-            int horaFim = LocalDateTime.parse(DataFim).getHour();
-            int minutoFim = LocalDateTime.parse(DataFim).getMinute();
+            int horaFim = LocalDateTime.parse(DataFim, formatter).getHour();
+            int minutoFim = LocalDateTime.parse(DataFim, formatter).getMinute();
 
             PreparedStatement stmt1 = this.connection
-                    .prepareStatement("SELECT * FROM agenda WHERE HoraInicio >= MAKETIME(" + horaInico + ", "
-                            + minutoInicio + ", 0) AND HoraFim <= MAKETIME(" + horaFim + ", " + minutoFim + ", 0)");
+                    .prepareStatement("SELECT * FROM agenda WHERE HoraInicio <= MAKETIME(" + horaInico + ", "
+                            + minutoInicio + ", 00) AND HoraFim >= MAKETIME(" + horaFim + ", " + minutoFim
+                            + ", 00) AND DiaSemana = DAYOFWEEK(\"" + DataInicio + "\") AND  CRMMEDICO = " + CRM + ";");
             ResultSet rs1 = stmt1.executeQuery();
 
-            if (rs1.wasNull())
+            if (!rs1.next()) {
                 return false;
+            }
 
             return true;
 
@@ -190,7 +199,7 @@ public class Clinica {
         try {
             PreparedStatement stmt = this.connection
                     .prepareStatement(
-                            "SELECT * FROM Consulta AS A JOIN Medico AS B WHERE A.CRM_Medico = B.CRM AND B.CRM = " + CRM
+                            "SELECT * FROM Consulta AS A JOIN Medico AS B WHERE A.CRMMedico = B.CRM AND B.CRM = " + CRM
                                     + " AND DtInicio = CONVERT(" + Dia + ", GETDATE())");
             ResultSet rs = stmt.executeQuery();
 
@@ -441,7 +450,7 @@ public class Clinica {
     }
 
     // Metodo que adiciona uma consulta no banco
-    // V
+    // V - V
     public void adicionaConsulta(Consulta consulta) {
         try {
 
@@ -451,18 +460,18 @@ public class Clinica {
                 System.out.println("Não foi possível marcar no uma consulta no horário entre " + consulta.getDtInicio()
                         + " e " + consulta.getDtFim());
             } else {
-                String sql = "INSERT INTO CONSULTA(DtInicio, DtFIm, Realizada, ValorPago, Pago, CRMMedico, CPFPaciente) VALUES (?,?,?,?,?,?,?,?)";
+                String sql = "INSERT INTO CONSULTA(DtInicio, DtFim, Realizada, ValorPago, Pago, CRMMedico, CPFPaciente) VALUES (STR_TO_DATE(\""
+                        + consulta.getDtInicio() + "\", \"%Y-%m-%d %H:%i\"),STR_TO_DATE(\"" + consulta.getDtFim()
+                        + "\", \"%Y-%m-%d %H:%i\"),?,?,?,?,?)";
                 PreparedStatement stmt2 = this.connection.prepareStatement(sql);
-                stmt2.setString(1, consulta.getDtInicio());
-                stmt2.setString(2, consulta.getDtFim());
-                stmt2.setString(3, consulta.getRealizada());
-                stmt2.setDouble(4, consulta.getValorPago());
-                stmt2.setInt(5, consulta.getPago());
-                stmt2.setInt(6, consulta.getCRMMEDICO());
-                stmt2.setString(7, consulta.getCPFPaciente());
+                stmt2.setString(1, consulta.getRealizada());
+                stmt2.setDouble(2, consulta.getValorPago());
+                stmt2.setInt(3, consulta.getPago());
+                stmt2.setInt(4, consulta.getCRMMEDICO());
+                stmt2.setString(5, consulta.getCPFPaciente());
                 stmt2.execute();
                 stmt2.close();
-                System.out.println("Consulta marcada: " + consulta.toString());
+                System.out.println("Consulta marcada: \n" + consulta.toString());
             }
         } catch (SQLException e) {
             System.out.println("Não foi possível inserir a consulta.");
@@ -472,7 +481,7 @@ public class Clinica {
     }
 
     // Metodo que adiciona um paciente
-    // V
+    // V - V
     /*
      * Quando uma consulta é solicitada a CLIMED, a recepcionista deverá saber o
      * nome e o telefone de contato do paciente
@@ -487,11 +496,12 @@ public class Clinica {
                         "Não foi possível inserir o paciente. Ja existe alguem cadastrado com este CPF, no nome de: "
                                 + rs.getString("Nome"));
             } else {
-                String sql = "INSERT INTO paciente(CPF, Nome, Telefone) VALUES (?,?,?)";
+                String sql = "INSERT INTO paciente(CPF, Nome, Sexo, Telefone) VALUES (?,?,?,?)";
                 PreparedStatement stmt2 = this.connection.prepareStatement(sql);
                 stmt2.setString(1, paciente.getCPF());
                 stmt2.setString(2, paciente.getNome());
-                stmt2.setString(3, paciente.getTelefone());
+                stmt2.setString(3, paciente.getSexo());
+                stmt2.setString(4, paciente.getTelefone());
 
                 stmt2.execute();
                 stmt2.close();
@@ -505,10 +515,11 @@ public class Clinica {
     }
 
     // Remover consulta pelo id
-    // V
+    // V - V
     public void removeConsulta(int Id) {
         try {
             PreparedStatement stmt = connection.prepareStatement("DELETE FROM consulta WHERE IdConsulta = " + Id);
+            System.out.println("Consulta com id " + Id + " removido.");
             stmt.execute();
             stmt.close();
         } catch (SQLException e) {
@@ -516,7 +527,7 @@ public class Clinica {
         }
     }
 
-    // VF
+    // V
     public void removeConsultasEmUmIntervalo(int CRM, String Inicio, String Fim) {
         try {
             PreparedStatement stmt = connection.prepareStatement(
@@ -531,10 +542,10 @@ public class Clinica {
     }
 
     // Retorna a consulta para ser alterada
-    // V
+    // V - V
     public Consulta pegaConsulta(int id) {
         try (PreparedStatement stmt = this.connection.prepareStatement(
-                "SELECT * FROM paciente WHERE IdConsulta = " + id)) {
+                "SELECT * FROM consulta WHERE IdConsulta = " + id)) {
             ResultSet rs = stmt.executeQuery();
             Consulta c = new Consulta();
             if (rs.next()) {
@@ -558,31 +569,38 @@ public class Clinica {
     }
 
     // Alterar tabela
-    // V
+    // V - v
     public void alteraConsulta(Consulta consulta) {
-        String sql = "UPDATE consulta SET DtInicio = ?, DtFim = ?, Realizada = ?, ValorPago = ?, Pago =?, CRMMedico = ?, CPFPaciente = ? WHERE IdConsulta = ?";
-        try (PreparedStatement stmt = this.connection.prepareStatement(
-                sql)) {
-            stmt.setString(1, consulta.getDtInicio());
-            stmt.setString(2, consulta.getDtFim());
-            stmt.setString(3, consulta.getRealizada());
-            stmt.setDouble(4, consulta.getValorPago());
-            stmt.setInt(5, consulta.getPago());
-            stmt.setInt(6, consulta.getCRMMEDICO());
-            stmt.setString(7, consulta.getCPFPaciente());
-            stmt.setInt(8, consulta.getIdConsulta());
-            stmt.execute();
-            stmt.close();
-            System.out.println("Novos dados da consulta: " + consulta.toString());
 
-        } catch (SQLException e) {
-            System.out.println("Não foi possível atualizar os dados da consulta.");
-            e.printStackTrace();
+        boolean disponivel = VerificaHorario(consulta.getDtInicio(), consulta.getDtFim(), consulta.getCRMMEDICO());
+
+        if (disponivel) {
+            String sql = "UPDATE consulta SET DtInicio = ?, DtFim = ?, Realizada = ?, ValorPago = ?, Pago =?, CRMMedico = ?, CPFPaciente = ? WHERE IdConsulta = ?";
+            try (PreparedStatement stmt = this.connection.prepareStatement(
+                    sql)) {
+                stmt.setString(1, consulta.getDtInicio());
+                stmt.setString(2, consulta.getDtFim());
+                stmt.setString(3, consulta.getRealizada());
+                stmt.setDouble(4, consulta.getValorPago());
+                stmt.setInt(5, consulta.getPago());
+                stmt.setInt(6, consulta.getCRMMEDICO());
+                stmt.setString(7, consulta.getCPFPaciente());
+                stmt.setInt(8, consulta.getIdConsulta());
+                stmt.execute();
+                stmt.close();
+                System.out.println("Novos dados da consulta: " + consulta.toString());
+
+            } catch (SQLException e) {
+                System.out.println("Não foi possível atualizar os dados da consulta.");
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Não foi possível agendar nos novos horários.");
         }
     }
 
     // Verifica se existe o paciente, caso ele nao lembre
-    // V
+    // V - V
     public boolean VerificaPaciente(String CPF) {
         try (PreparedStatement stmt = this.connection.prepareStatement(
                 "SELECT * FROM paciente WHERE CPF = " + CPF)) {
@@ -591,6 +609,8 @@ public class Clinica {
                 System.out
                         .println("CPF já cadastrado: " + rs.getString("CPF") + ", no nome de: " + rs.getString("Nome"));
                 return true;
+            }else{
+                System.out.println("CPF não cadastrado: " + CPF);
             }
 
         } catch (SQLException e) {
@@ -601,7 +621,33 @@ public class Clinica {
     }
 
     public static void main(String[] args) {
-        Menu.options();
+        // Consulta c = new Consulta();
+        // c.setCPFPaciente("12345678910");
+        // c.setCRMMedico(221425533);
+        // c.setDtInicio("2022-03-02 12:30");
+        // c.setDtFim("2022-03-02 17:40");
+        // c.setPago(0);
+        // c.setRealizada("Pendente");
+        // c.setValorPago(0);
+
+        Clinica clinica = new Clinica();
+
+        // clinica.adicionaConsulta(c);
+
+        // Paciente p = new Paciente(, "Maria", "198576255887");
+        // p.setSexo("Feminino");
+
+        // Consulta a = clinica.pegaConsulta(2);
+        // System.out.println(a);
+
+        // a.setPago(1);
+        // a.setRealizada("Realizada");
+
+        // clinica.alteraConsulta(a);
+        // clinica.adicionaPaciente(p);
+
+        clinica.VerificaPaciente("1111");
+        // Menu.options();
 
     }
 }

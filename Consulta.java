@@ -75,8 +75,8 @@ public class Consulta {
 
     @Override
     public String toString() {
-        return "IdConsulta: " + IdConsulta + ",/n Data de início: " + DtInicio + ",/n Data do fim: " + DtFim
-                + ",/n Foi realizada: " + Realizada + ",/n Valor Pago: " + ValorPago + ",/n Pago: " + Pago
-                + ",/n CRM do Médico" + CRMMedico + ",/n CPF do paciente: " + CPFPaciente;
+        return "IdConsulta: " + IdConsulta + "\n Data de início: " + DtInicio + "\n Data do fim: " + DtFim
+                + "\n Foi realizada: " + Realizada + "\n Valor Pago: " + ValorPago + "\n Pago: " + Pago
+                + "\n CRM do Médico: " + CRMMedico + "\n CPF do paciente: " + CPFPaciente;
     }
 }
