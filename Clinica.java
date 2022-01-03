@@ -137,6 +137,7 @@ public class Clinica {
         }
     }
 
+    //V - V
     public void HistoricoPaciente(String CPF) {
         try {
             PreparedStatement stmt = this.connection.prepareStatement(
