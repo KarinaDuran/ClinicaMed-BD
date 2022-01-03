@@ -18,17 +18,17 @@ public class Clinica {
     }
 
     // Exibir especialidades
-    // V
+    // V -V
     public void codigosEspecialidades() {
         try {
             PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM especialidade");
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Especialidade e = new Especialidade(rs.getInt("Codigo"));
-                e.setIndice(rs.getInt("Indice"));
-                e.setNome(rs.getString("Nome"));
-                e.toString();
-                System.out.println("\n");
+                Especialidade e = new Especialidade(rs.getInt("codigo"));
+                e.setIndice(rs.getInt("indice"));
+                e.setNome(rs.getString("nome"));
+                System.out.println(e.toString());
+
             }
             rs.close();
             stmt.close();
@@ -40,24 +40,27 @@ public class Clinica {
     }
 
     // Exibe Pacientes
-    // V
+    // V - V
     public void Pacientes(String Nome) {
         try {
             PreparedStatement stmt;
             if (Nome == null) {
                 stmt = this.connection.prepareStatement("SELECT * FROM paciente");
             } else {
-                stmt = this.connection.prepareStatement("SELECT * FROM paciente WHERE NOME = %" + Nome + "%");
+                stmt = this.connection.prepareStatement("SELECT * FROM paciente WHERE NOME LIKE \"%" + Nome + "%\"");
             }
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+                String endereco;
+                int idade;
                 Paciente p = new Paciente(rs.getString("CPF"), rs.getString("Nome"), rs.getString("Telefone"));
-                if (rs.getString("Sexo") != null)
-                    p.setSexo(rs.getString("Sexo"));
-                if (rs.getString("Endereco") != null)
-                    p.setEndereco(rs.getString("Endereco"));
-                if (rs.getInt("Idade") != 0)
-                    p.setIdade(rs.getInt("Idade"));
+                p.setSexo(rs.getString("Sexo"));
+                endereco = rs.getString("Endereço");
+                if (!rs.wasNull())
+                    p.setEndereco(endereco);
+                idade = rs.getInt("Idade");
+                if (!rs.wasNull())
+                    p.setIdade(idade);
 
                 System.out.println(p.toString());
             }
@@ -70,22 +73,27 @@ public class Clinica {
     }
 
     // Metodo que retorna os medicos de uma especialidade.
-    // V
+    // V - V
     public void MedicosEspecialidade(int codigoEspecialidade) {
         try {
             PreparedStatement stmt = this.connection.prepareStatement(
-                    "SELECT * FROM Medico AS A JOIN EspecialidadeMedico AS B  WHERE A.CRM = B.CRM AND B.CodigoEspecialidade = "
+                    "SELECT A.CRM, A.Nome, A.telefone FROM Medico AS A INNER JOIN especialidadeMedico AS B on A.CRM = B.CRMMedico WHERE codigoEspecialidade ="
                             + codigoEspecialidade);
             ResultSet rs = stmt.executeQuery();
-            if (rs.wasNull())
-                System.out.println("Não existem medicos para essa especialidade na clínica.");
-            while (rs.next()) {
-                Medico m = new Medico();
-                m.setCRM(rs.getInt("CRM"));
-                m.setNome(rs.getString("Nome"));
-                m.setTelefone(rs.getString("Telefone"));
-                System.out.println(m.toString());
+            try {
+                while (rs.next()) {
+                    Medico m = new Medico();
+                    m.setCRM(rs.getInt("A.CRM"));
+                    m.setNome(rs.getString("A.Nome"));
+                    m.setTelefone(rs.getString("A.Telefone"));
+                    System.out.println(m.toString());
+                    System.out.println("");
+                }
+            } catch (NullPointerException e) {
+                System.out.println("A clínica não possui medicos para essa especialidade.");
+                // TODO: handle exception
             }
+
             rs.close();
             stmt.close();
         } catch (SQLException e) {
@@ -96,24 +104,30 @@ public class Clinica {
     }
 
     // Verifica os crms e especialidades de medicos pelo nome
-    // V
+    // V - V
     public void MedicosPorNome(String Nome) {
         try {
-            PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM Medico WHERE Nome LIKE \"%?%\"");
+            PreparedStatement stmt = this.connection
+                    .prepareStatement("SELECT * FROM Medico WHERE Nome LIKE \"%" + Nome + "%\"");
             ResultSet rs = stmt.executeQuery();
-            if (rs.wasNull())
-                System.out.println("Não existe um médico com um nome parecido.");
-            while (rs.next()) {
-                int CRM = rs.getInt("CRM");
-                PreparedStatement stmt2 = this.connection.prepareStatement(
-                        "SELECT A.Nome, A.CRM, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
-                                + CRM);
-                ResultSet rs2 = stmt2.executeQuery();
-                System.out.println("Nome: " + rs2.getString("A.Nome") + "  CRM: " + rs2.getInt("A.CRM"));
-                while (rs2.next()) {
-                    System.out.println("Especialidade: " + rs2.getString("C.Nome"));
+            try {
+                while (rs.next()) {
+                    int CRM = rs.getInt("CRM");
+                    PreparedStatement stmt2 = this.connection.prepareStatement(
+                            "SELECT A.Nome, A.CRM, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                    + CRM + "ORDER BY A.Nome");
+                    ResultSet rs2 = stmt2.executeQuery();
+                    System.out.println("Nome: " + rs.getString("Nome") + "  CRM: " + rs.getInt("CRM") + "  Telefone: "
+                            + rs.getString("Telefone"));
+                    while (rs2.next()) {
+                        System.out.println("Especialidade: " + rs2.getString("C.Nome"));
+                    }
+                    rs2.close();
+                    stmt2.close();
                 }
 
+            } catch (NullPointerException e) {
+                System.out.println("Não existe um médico com um nome parecido.");
             }
             rs.close();
             stmt.close();
@@ -137,6 +151,7 @@ public class Clinica {
 
         } catch (SQLException e) {
             System.out.println("Não foi possível realizar a visualização do historico");
+            e.printStackTrace();
         }
 
     }
@@ -147,18 +162,19 @@ public class Clinica {
         try {
             PreparedStatement stmt;
             stmt = this.connection.prepareStatement(
-
-                    "SELECT * FROM CONSULTA WHERE CRMMEDICO = " + CRM + " AND DtInicio BETWEEN STR_TO_DATE(\""
+                    "SELECT * FROM (SELECT * FROM CONSULTA WHERE (DtInicio >= STR_TO_DATE(\""
                             + DataInicio +
-                            "\", \"%Y-%m-%d %H:%i\") AND STR_TO_DATE(\"" + DataFim
-                            + "\", \"%Y-%m-%d %H:%i\") OR DtFim BETWEEN STR_TO_DATE(\"" + DataInicio
-                            + "\", \"%Y-%m-%d %H:%i\") AND STR_TO_DATE(\"" + DataFim
-                            + "\", \"%Y-%m-%d %H:%i\") OR STR_TO_DATE(\"" + DataInicio
-                            + "\", \"%Y-%m-%d %H:%i\") BETWEEN DtInicio AND DtFim;");
+                            "\", \"%Y-%m-%d %H:%i\") AND DtInicio <= STR_TO_DATE(\"" + DataFim
+                            + "\", \"%Y-%m-%d %H:%i\")) OR (DtFim >= STR_TO_DATE(\"" + DataInicio
+                            + "\", \"%Y-%m-%d %H:%i\") AND DtFim <= STR_TO_DATE(\"" + DataFim
+                            + "\", \"%Y-%m-%d %H:%i\")) OR (STR_TO_DATE(\"" + DataInicio
+                            + "\", \"%Y-%m-%d %H:%i\") >= DtInicio AND STR_TO_DATE(\"" + DataInicio
+                            + "\", \"%Y-%m-%d %H:%i\") <= DtFim)) A WHERE A.CRMMedico = " + CRM);
             ResultSet rs = stmt.executeQuery();
 
-            if (rs.next())
+            if (rs.next()) {
                 return false;
+            }
 
             int horaInico = LocalDateTime.parse(DataInicio, formatter).getHour();
             int minutoInicio = LocalDateTime.parse(DataInicio, formatter).getMinute();
@@ -194,29 +210,36 @@ public class Clinica {
      * pelo diagnóstico.
      */
     // Metodo que retorna a lista das consultas de um dia
-    // V
+    // V - V
     public void consultasPorMedicoEmUmDia(int CRM, String Dia) {
+
         try {
-            PreparedStatement stmt = this.connection
+            PreparedStatement stmt0 = this.connection
                     .prepareStatement(
-                            "SELECT * FROM Consulta AS A JOIN Medico AS B WHERE A.CRMMedico = B.CRM AND B.CRM = " + CRM
-                                    + " AND DtInicio = CONVERT(" + Dia + ", GETDATE())");
+                            "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                    + CRM);
+            ResultSet rs0 = stmt0.executeQuery();
+            if (rs0.next()) {
+                System.out.println("Medico: " + rs0.getString("A.Nome") + " - Especialidade(s): ");
+                System.out.println(rs0.getString("C.Nome"));
+            }
+            while (rs0.next()) {
+                System.out.print(rs0.getString("C.Nome"));
+            }
+            rs0.close();
+            stmt0.close();
+
+            PreparedStatement stmt = this.connection
+                    .prepareStatement("SELECT * FROM Consulta WHERE DATE(DtInicio) = STR_TO_DATE(\""
+                            + Dia +
+                            "\", \"%Y-%m-%d\") AND CRMMedico =" + CRM + " ORDER BY DtInicio ");
             ResultSet rs = stmt.executeQuery();
 
-            PreparedStatement stmt2 = this.connection
-                    .prepareStatement(
-                            "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
-                                    + CRM);
-            ResultSet rs2 = stmt2.executeQuery();
-            System.out.println("Medico: " + rs2.getString("A.Nome") + " - Especialidade(s): ");
-            while (rs2.next()) {
-                System.out.print(rs2.getString("C.Nome"));
-            }
-            rs2.close();
-            stmt2.close();
+            System.out.println("\nDia : " + Dia);
 
             while (rs.next()) {
                 Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("IdConsulta"));
                 c.setDtInicio(rs.getString("DtInicio"));
                 c.setDtFim(rs.getString("DtFim"));
                 c.setRealizada(rs.getString("Realizada"));
@@ -231,12 +254,15 @@ public class Clinica {
                         .prepareStatement(
                                 "SELECT Nome, Telefone FROM paciente WHERE CPF = " + rs.getString("CPFPaciente"));
                 ResultSet rs1 = stmt1.executeQuery();
-                System.out.println(
-                        "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
+                if (rs1.next()) {
+                    System.out.println(
+                            "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: "
+                                    + rs1.getString("Telefone"));
+                }
                 rs1.close();
                 stmt1.close();
 
-                System.out.println("-----------------------------------------------------");
+                System.out.println("\n-------------------------------\n");
             }
             rs.close();
             stmt.close();
@@ -246,16 +272,20 @@ public class Clinica {
         }
     }
 
+    // V - V
     public void consultasPorDia(String Dia) {
         try {
             PreparedStatement stmt = this.connection
-                    .prepareStatement("SELECT * FROM Consulta AS A AND DtInicio = CONVERT(" + Dia + ", GETDATE()");
+                    .prepareStatement("SELECT * FROM Consulta WHERE DATE(DtInicio) = STR_TO_DATE(\""
+                            + Dia +
+                            "\", \"%Y-%m-%d\") ORDER BY DtInicio ");
             ResultSet rs = stmt.executeQuery();
 
             System.out.println("Dia : " + Dia);
 
             while (rs.next()) {
                 Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("IdConsulta"));
                 c.setDtInicio(rs.getString("DtInicio"));
                 c.setDtFim(rs.getString("DtFim"));
                 c.setRealizada(rs.getString("Realizada"));
@@ -270,21 +300,32 @@ public class Clinica {
                         .prepareStatement(
                                 "SELECT Nome, Telefone FROM paciente WHERE CPF = " + rs.getString("CPFPaciente"));
                 ResultSet rs1 = stmt1.executeQuery();
-                System.out.println(
-                        "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
+                if (rs1.next()) {
+                    System.out.println(
+                            "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: "
+                                    + rs1.getString("Telefone"));
+                }
                 rs1.close();
                 stmt1.close();
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = ?");
+                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                        + rs.getString("CRMMedico"));
                 ResultSet rs2 = stmt2.executeQuery();
-                System.out.println("Medico :" + rs2.getString("A.Nome") + "   Especialidade(s): ");
+                if (rs2.next()) {
+                    System.out.println("Medico :" + rs2.getString("A.Nome") + " -  Especialidade(s): ");
+                    String nome = rs2.getString("C.Nome");
+                    if (rs.wasNull())
+                        System.out.println(nome);
+                }
+
                 while (rs2.next()) {
                     System.out.print(rs2.getString("C.Nome"));
                 }
                 rs2.close();
                 stmt2.close();
+                System.out.println("\n-------------------------------\n");
 
             }
             rs.close();
@@ -296,19 +337,21 @@ public class Clinica {
     }
 
     // Metodo para consultas em um intervalo
-    // V
+    // V - V
     public void consultasEmIntervalo(String DiaInicio, String DiaFinal) {
         try {
             PreparedStatement stmt = this.connection
                     .prepareStatement(
-                            "SELECT * FROM Consulta WHERE DtInicio BETWEEN CONVERT(" + DiaInicio
-                                    + ", GETDATE()) AND CONVERT( " + DiaFinal + ", GETDATE())");
+                            "SELECT * FROM Consulta WHERE DATE(DtInicio) >= STR_TO_DATE(\"" + DiaInicio
+                                    + "\", \"%Y-%m-%d\") AND DATE(DtInicio) <= STR_TO_DATE(\"" + DiaFinal
+                                    + "\", \"%Y-%m-%d\") ORDER BY DtInicio DESC");
             ResultSet rs = stmt.executeQuery();
 
             System.out.println("Do dia: " + DiaInicio + " ao Dia: " + DiaFinal);
-
+            System.out.println("");
             while (rs.next()) {
                 Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("IdConsulta"));
                 c.setDtInicio(rs.getString("DtInicio"));
                 c.setDtFim(rs.getString("DtFim"));
                 c.setRealizada(rs.getString("Realizada"));
@@ -323,23 +366,28 @@ public class Clinica {
                         .prepareStatement(
                                 "SELECT Nome, Telefone FROM paciente WHERE CPF = " + rs.getString("CPFPaciente"));
                 ResultSet rs1 = stmt1.executeQuery();
-                System.out.println(
-                        "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
+                if (rs1.next())
+                    System.out.println(
+                            "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: "
+                                    + rs1.getString("Telefone"));
                 rs1.close();
                 stmt1.close();
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                         + c.getCRMMEDICO());
                 ResultSet rs2 = stmt2.executeQuery();
-                System.out.println("Medico: " + rs2.getString("A.Nome") + "Especialidade(s): ");
+                if (rs2.next()) {
+                    System.out.println("Medico: " + rs2.getString("A.Nome") + " - Especialidade(s): ");
+                    System.out.println(rs2.getString("C.Nome"));
+                }
                 while (rs2.next()) {
-                    System.out.print(rs2.getString("C.Nome"));
+                    System.out.println(rs2.getString("C.Nome"));
                 }
                 rs2.close();
                 stmt2.close();
-
+                System.out.println("\n-------------------------------\n");
             }
             rs.close();
             stmt.close();
@@ -349,31 +397,36 @@ public class Clinica {
         }
     }
 
-    // V
+    // V -v
     public void consultasPorMedicoEmIntervalo(int CRM, String DiaInicio, String DiaFinal) {
         try {
+            PreparedStatement stmt0 = this.connection
+                    .prepareStatement(
+                            "SELECT * FROM (SELECT A.Nome AS NomeMedico, A.CRM, C.Nome AS NomeEspecialidade FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo)X WHERE CRM ="
+                                    + CRM);
+            ResultSet rs0 = stmt0.executeQuery();
+            if (rs0.next()) {
+                System.out.println("Medico: " + rs0.getString("NomeMedico") + " - Especialidade(s): ");
+                System.out.println(rs0.getString("NomeEspecialidade"));
+            }
+            while (rs0.next()) {
+                System.out.println(rs0.getString("NomeEspecialidade"));
+            }
+            rs0.close();
+            stmt0.close();
+
             PreparedStatement stmt = this.connection
                     .prepareStatement(
-                            "SELECT * FROM Consulta AS A JOIN Medico AS B WHERE A.CRM_Medico = B.CRM AND B.CRM = " + CRM
-                                    + " AND DtInicio BETWEEN CONVERT(" + DiaInicio + ", GETDATE()) AND CONVERT( "
-                                    + DiaFinal + ", GETDATE())");
+                            "SELECT * FROM Consulta WHERE DATE(DtInicio) >= STR_TO_DATE(\"" + DiaInicio
+                                    + "\", \"%Y-%m-%d\") AND DATE(DtInicio) <= STR_TO_DATE(\"" + DiaFinal
+                                    + "\", \"%Y-%m-%d\") AND CRMMedico = " + CRM + " ORDER BY DtInicio");
             ResultSet rs = stmt.executeQuery();
 
-            PreparedStatement stmt2 = this.connection
-                    .prepareStatement(
-                            "SELECT C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
-                                    + CRM);
-            ResultSet rs2 = stmt2.executeQuery();
-            System.out.println("Especialidade(s): ");
-
-            while (rs2.next()) {
-                System.out.print(rs2.getString("C.Nome"));
-            }
-            rs2.close();
-            stmt2.close();
-
+            System.out.println("Do dia: " + DiaInicio + " ao Dia: " + DiaFinal);
+            System.out.println("");
             while (rs.next()) {
                 Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("IdConsulta"));
                 c.setDtInicio(rs.getString("DtInicio"));
                 c.setDtFim(rs.getString("DtFim"));
                 c.setRealizada(rs.getString("Realizada"));
@@ -383,16 +436,20 @@ public class Clinica {
                 c.setCPFPaciente(rs.getString("CPFPaciente"));
 
                 System.out.println(c.toString());
+
                 PreparedStatement stmt1 = this.connection
                         .prepareStatement(
                                 "SELECT Nome, Telefone FROM paciente WHERE CPF = " + rs.getString("CPFPaciente"));
                 ResultSet rs1 = stmt1.executeQuery();
-                System.out.println(
-                        "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
+                if (rs1.next())
+                    System.out.println(
+                            "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: "
+                                    + rs1.getString("Telefone"));
                 rs1.close();
                 stmt1.close();
-            }
 
+                System.out.println("\n-------------------------------\n");
+            }
             rs.close();
             stmt.close();
 
@@ -402,23 +459,26 @@ public class Clinica {
     }
 
     // Metodo para consultas de um paciente
-    // v
+    // v -V
     public void consultasDeUmPaciente(String CPF) {
         try {
-            PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM consulta WHERE CPF = " + CPF);
+            PreparedStatement stmt = this.connection
+                    .prepareStatement("SELECT * FROM consulta WHERE CPFPaciente = " + CPF + " ORDER BY DtInicio");
             ResultSet rs = stmt.executeQuery();
 
             PreparedStatement stmt1 = this.connection
                     .prepareStatement(
-                            "SELECT Nome, Telefone FROM paciente WHERE CPF = " + rs.getString("CPFPaciente"));
+                            "SELECT Nome, Telefone FROM paciente WHERE CPF = " + CPF);
             ResultSet rs1 = stmt1.executeQuery();
-            System.out.println(
-                    "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
+            if (rs1.next())
+                System.out.println(
+                        "Paciente: " + rs1.getString("Nome") + ", Telefone do paciente: " + rs1.getString("Telefone"));
             rs1.close();
             stmt1.close();
 
             while (rs.next()) {
                 Consulta c = new Consulta();
+                c.setIdConsulta(rs.getInt("IdConsulta"));
                 c.setDtInicio(rs.getString("DtInicio"));
                 c.setDtFim(rs.getString("DtFim"));
                 c.setRealizada(rs.getString("Realizada"));
@@ -431,7 +491,7 @@ public class Clinica {
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRM INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                "SELECT C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                         + c.getCRMMEDICO());
                 ResultSet rs2 = stmt2.executeQuery();
                 System.out.println("Especialidade(s): ");
@@ -440,6 +500,7 @@ public class Clinica {
                 }
                 rs2.close();
                 stmt2.close();
+                System.out.println("\n-------------------------------\n");
             }
             rs.close();
             stmt.close();
@@ -527,17 +588,20 @@ public class Clinica {
         }
     }
 
-    // V
+    // V - v
     public void removeConsultasEmUmIntervalo(int CRM, String Inicio, String Fim) {
         try {
             PreparedStatement stmt = connection.prepareStatement(
-                    "DELETE FROM Consulta WHERE CRM_Medico =" + CRM + " AND DtIncio BETWEEN " + Inicio + " AND " + Fim);
+                    "DELETE FROM Consulta WHERE CRMMedico =" + CRM + " AND DtInicio >= STR_TO_DATE(\"" + Inicio
+                            + "\", \"%Y-%m-%d %H:%i\") AND DtInicio <= STR_TO_DATE(\"" + Fim
+                            + "\", \"%Y-%m-%d %H:%i\")");
             stmt.execute();
             stmt.close();
             System.out.println(
                     "Excluindo as consultas do dia " + Inicio + " ao dia " + Fim + ", do médico com CRM = " + CRM);
         } catch (SQLException e) {
             System.out.println("Não foi possivel deletar as consultas");
+            e.printStackTrace();
         }
     }
 
@@ -609,7 +673,7 @@ public class Clinica {
                 System.out
                         .println("CPF já cadastrado: " + rs.getString("CPF") + ", no nome de: " + rs.getString("Nome"));
                 return true;
-            }else{
+            } else {
                 System.out.println("CPF não cadastrado: " + CPF);
             }
 
@@ -622,17 +686,21 @@ public class Clinica {
 
     public static void main(String[] args) {
         // Consulta c = new Consulta();
-        // c.setCPFPaciente("12345678910");
-        // c.setCRMMedico(221425533);
-        // c.setDtInicio("2022-03-02 12:30");
-        // c.setDtFim("2022-03-02 17:40");
+        // c.setCPFPaciente("33333333333");
+        // c.setCRMMedico(1004);
+        // c.setDtInicio("2021-12-31 11:30");
+        // c.setDtFim("2021-12-31 11:40");
         // c.setPago(0);
         // c.setRealizada("Pendente");
         // c.setValorPago(0);
 
         Clinica clinica = new Clinica();
-
+        // // clinica.Pacientes("aaa");
         // clinica.adicionaConsulta(c);
+        // clinica.consultasPorMedicoEmUmDia(1001, "2021-12-27");
+        ;
+
+        clinica.HistoricoPaciente("12345678910");
 
         // Paciente p = new Paciente(, "Maria", "198576255887");
         // p.setSexo("Feminino");
@@ -646,7 +714,6 @@ public class Clinica {
         // clinica.alteraConsulta(a);
         // clinica.adicionaPaciente(p);
 
-        clinica.VerificaPaciente("1111");
         // Menu.options();
 
     }

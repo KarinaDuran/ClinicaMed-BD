@@ -29,6 +29,6 @@ public class Medico {
 
     @Override
     public String toString(){
-        return "CRM:  " + CRM + "/nNome:  " + Nome + "/nTelefone:  " + Telefone;
+        return "CRM:  " + CRM + "\nNome:  " + Nome + "\nTelefone:  " + Telefone;
     }
 }

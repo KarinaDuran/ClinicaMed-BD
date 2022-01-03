@@ -28,7 +28,7 @@ public String getNome() {
 
 @Override
 public String toString(){
-    return "Codigo:  " + codigo + "Indice:  "+ Indice + "Nome:  " + Nome;
+    return "Codigo:  " + codigo + "  Indice:  "+ Indice + "  Nome:  " + Nome;
 }
 
 }
