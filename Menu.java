@@ -115,40 +115,39 @@ public class Menu {
                     clin.consultasDeUmPaciente(cpfpac);
                     break;
                 case "7":
-                String optMed;
-                do {
-                     optionsMedico();
-                    optMed = scan.nextLine();
-                    switch (optMed) {
-                        case "0": {
-                            System.out.println("Insira o Nome ou parte dele: ");
-                            String NomeMedico =(scan.nextLine());
-                            clin.MedicosPorNome(NomeMedico);
-                            break;
-                        }
-                        case "1": {
-                            System.out.println("Insira o codigo da especialidade: ");
-                            int codigoE = (Integer.parseInt(scan.nextLine()));
-                            clin.MedicosEspecialidade(codigoE);
-                            break;
-                        }
-                        case "2": {
+                    String optMed;
+                    do {
+                        optionsMedico();
+                        optMed = scan.nextLine();
+                        switch (optMed) {
+                            case "0": {
+                                System.out.println("Insira o Nome ou parte dele: ");
+                                String NomeMedico = (scan.nextLine());
+                                clin.MedicosPorNome(NomeMedico);
+                                break;
+                            }
+                            case "1": {
+                                System.out.println("Insira o codigo da especialidade: ");
+                                int codigoE = (Integer.parseInt(scan.nextLine()));
+                                clin.MedicosEspecialidade(codigoE);
+                                break;
+                            }
+                            case "2": {
                                 clin.codigosEspecialidades();
-                            break;
+                                break;
+                            }
                         }
-                    }
-                } while (!optMed.equals("3"));
-                break;
+                    } while (!optMed.equals("3"));
+                    break;
                 case "8":
-                System.out.println("Insira o CPF do paciente");
-                String CPFp = scan.nextLine();
-                if (clin.VerificaPaciente(CPFp)) {
-                    System.out.println("Paciente tem cadastro");
-                    clin.HistoricoPaciente(CPFp);
-                } else {
-                    System.out.println("Paciente não tem cadastro\n");
-                }
-                   
+                    System.out.println("Insira o CPF do paciente");
+                    String CPFp = scan.nextLine();
+                    if (clin.VerificaPaciente(CPFp)) {
+                        System.out.println("Paciente tem cadastro");
+                        clin.HistoricoPaciente(CPFp);
+                    } else {
+                        System.out.println("Paciente não tem cadastro\n");
+                    }
 
             }
 
@@ -221,7 +220,7 @@ public class Menu {
                 case "6":
                     System.out.println("Insira o CPF do paciente");
                     con.setCPFPaciente(scan.nextLine());
-                break;
+                    break;
             }
 
         } while (!comando.equals("7"));
@@ -258,13 +257,13 @@ public class Menu {
     }
 
     public static void optionsMedico() {
-    System.out.print("========== Sobre o medico ==========\n");
-    System.out.println("- Insira o código do comando desejado:\n");
-    System.out.println("(0) Deseja procurar um medico pelo nome.\n");
-    System.out.println("(1) Gostaria de ver as opções de medicos de uma determinada especialidade.\n");
-    System.out.println("(2) Ver lista de especialidades.\n");
-    System.out.println("(3) Voltar ao inicio. ");
-    System.out.println("======================================================");
+        System.out.print("========== Sobre o medico ==========\n");
+        System.out.println("- Insira o código do comando desejado:\n");
+        System.out.println("(0) Deseja procurar um medico pelo nome.\n");
+        System.out.println("(1) Gostaria de ver as opções de medicos de uma determinada especialidade.\n");
+        System.out.println("(2) Ver lista de especialidades.\n");
+        System.out.println("(3) Voltar ao inicio. ");
+        System.out.println("======================================================");
     }
 
     public static void optionsConsulta() {
