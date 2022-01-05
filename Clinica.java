@@ -157,13 +157,18 @@ public class Clinica {
     public boolean VerificaHorario(String DataInicio, String DataFim, int CRM, int Id) {
 
         try {
+
+            if(DataFim.length() < 16 || DataInicio.length() < 16)return false;
             String a = DataInicio.substring(0, 16);
+            try{
             LocalDateTime aux1 = LocalDateTime.parse(a, formatter);
             a = DataFim.substring(0, 16);
             LocalDateTime aux2 = LocalDateTime.parse(a, formatter);
-
             if (aux1.isAfter(aux2))
                 return false;
+            }catch(Exception e){
+                System.out.println("Formato errado");
+            }    
 
             String sql = "SELECT * FROM (SELECT * FROM CONSULTA WHERE (DtInicio >= STR_TO_DATE(\""
                     + DataInicio +
@@ -464,6 +469,24 @@ public class Clinica {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    //Verifica a existência de um CRM
+    public boolean CRMExiste(int CRM){
+        PreparedStatement stmt;
+        try {
+            stmt = this.connection
+            .prepareStatement(
+                    "SELECT * FROM Medico WHERE CRM = "
+                            + CRM); 
+            ResultSet rs = stmt.executeQuery();
+            
+            if(rs.next()) return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+       
     }
 
     // Metodo para consultas de um paciente

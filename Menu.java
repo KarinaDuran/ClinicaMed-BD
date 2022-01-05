@@ -148,7 +148,7 @@ public class Menu {
                     } else {
                         System.out.println("Paciente não tem cadastro\n");
                     }
-
+                break;
             }
 
         } while (!comando.equals("9"));
