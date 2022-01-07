@@ -74,7 +74,7 @@ public class Clinica {
     public void MedicosEspecialidade(int codigoEspecialidade) {
         try {
             PreparedStatement stmt = this.connection.prepareStatement(
-                    "SELECT A.CRM, A.Nome, A.telefone FROM Medico AS A INNER JOIN especialidadeMedico AS B on A.CRM = B.CRMMedico WHERE codigoEspecialidade ="
+                    "SELECT A.CRM, A.Nome, A.telefone FROM Medico AS A INNER JOIN Medicoespecialidade AS B on A.CRM = B.CRMMedico WHERE codigoEspecialidade ="
                             + codigoEspecialidade);
             ResultSet rs = stmt.executeQuery();
             try {
@@ -110,7 +110,7 @@ public class Clinica {
                 while (rs.next()) {
                     int CRM = rs.getInt("CRM");
                     PreparedStatement stmt2 = this.connection.prepareStatement(
-                            "SELECT A.Nome, A.CRM, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                            "SELECT A.Nome, A.CRM, C.Nome FROM Medico AS A INNER JOIN Medicoespecialidade AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                     + CRM);
                     ResultSet rs2 = stmt2.executeQuery();
                     System.out.println("Nome: " + rs.getString("Nome") + "  CRM: " + rs.getInt("CRM") + "  Telefone: "
@@ -158,14 +158,19 @@ public class Clinica {
 
         try {
 
-            if(DataFim.length() < 16 || DataInicio.length() < 16)return false;
+            if(DataFim.length() < 16 || DataInicio.length() < 16){
+                //System.out.println("foi aqui 0.0");
+                return false;
+            }
             String a = DataInicio.substring(0, 16);
             try{
             LocalDateTime aux1 = LocalDateTime.parse(a, formatter);
             a = DataFim.substring(0, 16);
             LocalDateTime aux2 = LocalDateTime.parse(a, formatter);
-            if (aux1.isAfter(aux2))
+            if (aux1.isAfter(aux2)){
+                //System.out.println("foi aqui 0");
                 return false;
+            }
             }catch(Exception e){
                 System.out.println("Formato errado");
             }    
@@ -188,6 +193,7 @@ public class Clinica {
                     if (rs.getInt("IdConsulta") == Id)
                         return true;
                 }
+                //System.out.println("foi aqui 1");
                 return false;
             }
 
@@ -200,11 +206,12 @@ public class Clinica {
             PreparedStatement stmt1 = this.connection
                     .prepareStatement("SELECT * FROM agenda WHERE HoraInicio <= MAKETIME(" + horaInico + ", "
                             + minutoInicio + ", 00) AND HoraFim >= MAKETIME(" + horaFim + ", " + minutoFim
-                            + ", 00) AND DiaSemana = DAYOFWEEK(\"" + DataInicio + "\") AND  CRMMEDICO = " + CRM + ";");
+                            + ", 00) AND DiaSemana = DAYOFWEEK(\"" + DataInicio + "\") AND  CRMMedico = " + CRM + ";");
             ResultSet rs1 = stmt1.executeQuery();
 
             if (!rs1.next()) {
-                return false;
+                //System.out.println("foi aqui 2");
+                return true;
             }
 
             return true;
@@ -230,7 +237,7 @@ public class Clinica {
         try {
             PreparedStatement stmt0 = this.connection
                     .prepareStatement(
-                            "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                            "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN MedicoEspecialidade AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                     + CRM);
             ResultSet rs0 = stmt0.executeQuery();
             if (rs0.next()) {
@@ -324,7 +331,7 @@ public class Clinica {
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN Medicoespecialidade AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                         + rs.getString("CRMMedico"));
                 ResultSet rs2 = stmt2.executeQuery();
                 if (rs2.next()) {
@@ -388,7 +395,7 @@ public class Clinica {
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                "SELECT A.Nome, C.Nome FROM Medico AS A INNER JOIN Medicoespecialidade AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                         + c.getCRMMEDICO());
                 ResultSet rs2 = stmt2.executeQuery();
                 if (rs2.next()) {
@@ -521,7 +528,7 @@ public class Clinica {
 
                 PreparedStatement stmt2 = this.connection
                         .prepareStatement(
-                                "SELECT C.Nome FROM Medico AS A INNER JOIN EspecialidadeMedico AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
+                                "SELECT C.Nome FROM Medico AS A INNER JOIN Medicoespecialidade AS B ON A.CRM = B.CRMMedico INNER JOIN Especialidade AS C ON B.CodigoEspecialidade = C.Codigo WHERE A.CRM = "
                                         + c.getCRMMEDICO());
                 ResultSet rs2 = stmt2.executeQuery();
                 System.out.println("Especialidade(s): ");
@@ -548,6 +555,7 @@ public class Clinica {
                     -1);
 
             if (!disponivel) {
+                System.out.println(disponivel);
                 System.out.println("Não foi possível marcar no uma consulta no horário entre " + consulta.getDtInicio()
                         + " e " + consulta.getDtFim());
             } else {

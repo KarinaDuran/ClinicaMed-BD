@@ -3,7 +3,7 @@ public class Agenda {
     private String DiaSemana;
     private String HoraInicio;
     private String HoraFim;
-    private int CRM_Medico;
+    private int CRMMedico;
 
     public void setIdAgenda(int idAgenda) {
         this.idAgenda = idAgenda;
@@ -38,9 +38,9 @@ public class Agenda {
     }
 
     public void setCRM_Medico(int cRM_Medico) {
-        CRM_Medico = cRM_Medico;
+        CRMMedico = cRM_Medico;
     }
     public int getCRM_Medico() {
-        return CRM_Medico;
+        return CRMMedico;
     }
 }

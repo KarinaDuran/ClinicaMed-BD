@@ -44,6 +44,11 @@ public class Menu {
                         optCon = scan.nextLine();
                         switch (optCon) {
                             case "0": {
+                                System.out.println("Deseja pesquisar pelo CRM antes de inserir? (1)sim (2)não");
+                                int verirfica = (Integer.parseInt(scan.nextLine()));
+                                if (verirfica == 1){
+                                    mostraMedico(scan, clin);
+                                }
                                 System.out.println("Insira o CRM do médico. ");
                                 int CRM = (Integer.parseInt(scan.nextLine()));
                                 System.out.println("Siga o formato de data AAAA-MM-DD ");
@@ -69,6 +74,11 @@ public class Menu {
                         optCon2 = scan.nextLine();
                         switch (optCon2) {
                             case "0": {
+                                System.out.println("Deseja pesquisar pelo CRM antes de inserir? (1)sim (2)não");
+                                int verirfica = (Integer.parseInt(scan.nextLine()));
+                                if (verirfica == 1){
+                                    mostraMedico(scan, clin);
+                                }
                                 System.out.println("Insira o CRM do medico. ");
                                 int CRMMedico = (Integer.parseInt(scan.nextLine()));
                                 System.out.println("Siga o formato de data AAAA-MM-DD ");
@@ -92,18 +102,27 @@ public class Menu {
                     } while (!optCon2.equals("2"));
                     break;
                 case "3":
-                    System.out.println("Insira o id da consulta a ser alterada");
-                    String id = scan.nextLine();
-                    int idConsulta = (Integer.parseInt(id));
-                    Consulta cons = clin.pegaConsulta(idConsulta);
-                    Consulta consAlterada = menu.altConsulta(cons, scan);
-                    clin.alteraConsulta(consAlterada);
+                    try {
+                        System.out.println("Insira o id da consulta a ser alterada");
+                        String id = scan.nextLine();
+                        int idConsulta = (Integer.parseInt(id));
+                        Consulta cons = clin.pegaConsulta(idConsulta);
+                        Consulta consAlterada = menu.altConsulta(cons, scan);
+                        clin.alteraConsulta(consAlterada);
+                        
+                    } catch (Exception e) {
+                        System.out.println("Erro ao tentar alterar consulta, ou nenhuma alteração foi feita");
+                    }
                     break;
                 case "4":
-                    System.out.println("Insira o id da consulta a ser exlcluida");
-                    String idc = scan.nextLine();
-                    int idCon = (Integer.parseInt(idc));
-                    clin.removeConsulta(idCon);
+                try {
+                        System.out.println("Insira o id da consulta a ser exlcluida");
+                        String idc = scan.nextLine();
+                        int idCon = (Integer.parseInt(idc));
+                        clin.removeConsulta(idCon);                        
+                    } catch (Exception e) {
+                        System.out.println("Id da consulta insiro de forma incorreta ou invalido");
+                    }
                     break;
 
                 case "5":
@@ -228,7 +247,34 @@ public class Menu {
         return con;
     }
 
+    public static void mostraMedico(Scanner scan, Clinica clin){
+    String optMed;
+        do{    
+        optionsMedico();
+        optMed = scan.nextLine();
+        switch (optMed) {
+            case "0": {
+                System.out.println("Insira o Nome ou parte dele: ");
+                String NomeMedico = (scan.nextLine());
+                clin.MedicosPorNome(NomeMedico);
+                break;
+            }
+            case "1": {
+                System.out.println("Insira o codigo da especialidade: ");
+                int codigoE = (Integer.parseInt(scan.nextLine()));
+                clin.MedicosEspecialidade(codigoE);
+                break;
+            }
+            case "2": {
+                clin.codigosEspecialidades();
+                break;
+            }
+        }
+    } while (!optMed.equals("3"));
+    }
+
     public void fazConsulta(String cpf, Consulta con, Clinica clin, int caso, Scanner scan) {
+        int pago;
         System.out.println("Insira os dados da consulta. ");
 
         con.setCPFPaciente(cpf);
@@ -242,12 +288,18 @@ public class Menu {
 
         System.out.println("Realizada (insira o status): ");
         con.setRealizada(scan.nextLine());
-
-        System.out.println("Valor Pago: ");
-        con.setValorPago(Double.parseDouble(scan.nextLine()));
-
+        
         System.out.println("Foi pago (digite 1 para sim ou 0 para não): ");
-        con.setPago(Integer.parseInt(scan.nextLine()));
+        pago = (Integer.parseInt(scan.nextLine()));
+        con.setPago(pago);
+
+        if( pago == 0){
+            con.setValorPago(0);
+        } else{      
+            System.out.println("Valor Pago: ");
+            con.setValorPago(Double.parseDouble(scan.nextLine()));
+        }
+
 
         System.out.println("CRM do médico: ");
         con.setCRMMedico(Integer.parseInt(scan.nextLine()));
